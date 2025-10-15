@@ -172,15 +172,14 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
       });
       
       // Total section
-      doc.setFillColor(0, 0, 0);
-      doc.rect(20, yPos, 170, 20, 'F');
-      doc.setLineWidth(0.3);
-      doc.line(20, yPos, 190, yPos);
+      // Total section with underline
+      doc.setFillColor(255, 255, 255);  // White background
+      doc.setTextColor(0);  // Black text
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(255, 255, 255);
-      doc.text('Grand Total:', 120, yPos + 14);
-      doc.text(`₹${order.totalPrice.toFixed(2)}`, 165, yPos + 14, { align: 'right' });
+      doc.text('Total:', 120, yPos + 14);
+      doc.text('₹_____________', 140, yPos + 14);  // Underline
+      doc.text(`${order.totalPrice.toFixed(2)}`, 165, yPos + 14, { align: 'right' });
       
       // Footer
       doc.setTextColor(0);
@@ -223,16 +222,14 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
       }
     });
 
-    // Total section for single order
-    doc.setFillColor(0, 0, 0);
-    doc.rect(20, yPos, 170, 20, 'F');
-    doc.setLineWidth(0.3);
-    doc.line(20, yPos, 190, yPos);
+    // Total section for single order with underline
+    doc.setFillColor(255, 255, 255);  // White background
+    doc.setTextColor(0);  // Black text
     doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
-    doc.setTextColor(255, 255, 255);
-    doc.text(`Grand Total:`, 120, yPos + 14);
-    doc.text(`₹${data.totalPrice.toFixed(2)}`, 165, yPos + 14, { align: 'right' });
+    doc.text('Total:', 120, yPos + 14);
+    doc.text('₹_____________', 140, yPos + 14);  // Underline
+    doc.text(`${data.totalPrice.toFixed(2)}`, 165, yPos + 14, { align: 'right' });
 
     // Footer for single order
     doc.setTextColor(0);

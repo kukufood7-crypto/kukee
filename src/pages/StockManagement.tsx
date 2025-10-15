@@ -308,11 +308,12 @@ const StockManagement = () => {
                           onKeyDown={async (e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
-                              const value = parseFloat(e.currentTarget.value || "0");
+                              const input = e.currentTarget;
+                              const value = parseFloat(input.value || "0");
                               if (value > 0) {
                                 const newQuantity = item.quantity + value;
                                 await handleUpdateStock(item._id, newQuantity);
-                                e.currentTarget.value = "";
+                                input.value = "";
                               }
                             }
                           }}
@@ -334,13 +335,15 @@ const StockManagement = () => {
                           onKeyDown={async (e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
-                              const value = parseFloat(e.currentTarget.value || "0");
+                              const input = e.currentTarget;
+                              const value = parseFloat(input.value || "0");
                               if (value > 0 && value <= item.quantity) {
                                 const newQuantity = item.quantity - value;
                                 await handleUpdateStock(item._id, newQuantity);
-                                e.currentTarget.value = "";
+                                input.value = "";
                               } else {
                                 toast.error("Invalid quantity to remove");
+                                input.value = "";
                               }
                             }
                           }}
@@ -370,12 +373,15 @@ const StockManagement = () => {
                           onKeyDown={async (e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
-                              const value = parseFloat(e.currentTarget.value || "0");
+                              const input = e.currentTarget;
+                              const value = parseFloat(input.value || "0");
                               if (value > 0) {
                                 const newQuantity = item.quantity + value;
                                 await handleUpdateStock(item._id, newQuantity);
-                                e.currentTarget.value = "";
+                                input.value = "";
                                 toast.success(`Added ${value} pouches successfully. This will update maximum possible packets in FullPacket.`);
+                              } else {
+                                input.value = "";
                               }
                             }
                           }}
@@ -397,14 +403,16 @@ const StockManagement = () => {
                           onKeyDown={async (e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
-                              const value = parseFloat(e.currentTarget.value || "0");
+                              const input = e.currentTarget;
+                              const value = parseFloat(input.value || "0");
                               if (value > 0 && value <= item.quantity) {
                                 const newQuantity = item.quantity - value;
                                 await handleUpdateStock(item._id, newQuantity);
-                                e.currentTarget.value = "";
+                                input.value = "";
                                 toast.success(`Removed ${value} pouches successfully. This will update maximum possible packets in FullPacket.`);
                               } else {
                                 toast.error(value > item.quantity ? "Not enough pouches available" : "Please enter a valid quantity");
+                                input.value = "";
                               }
                             }
                           }}

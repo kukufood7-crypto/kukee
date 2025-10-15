@@ -27,6 +27,7 @@ interface Order {
   quantity_1kg?: number;
   total_amount?: number;
   amount?: number; // Some orders might use 'amount' instead of 'total_amount'
+  payment_method?: string; // Payment method for completed orders (CASH/UPI)
 }
 
 const ShopOrderHistory = () => {
@@ -66,6 +67,17 @@ const ShopOrderHistory = () => {
       const ordersRes = await fetch(apiPath('/api/orders'));
       if (!ordersRes.ok) throw new Error('Failed to fetch orders');
       const ordersData = await ordersRes.json();
+
+      // Fetch completed orders to get payment methods
+      const completedOrdersRes = await fetch(apiPath('/api/completed-orders'));
+      if (!completedOrdersRes.ok) throw new Error('Failed to fetch completed orders');
+      const completedOrdersData = await completedOrdersRes.json();
+
+      // Create a map of completed orders with their payment methods
+      const completedOrdersMap = new Map(
+        completedOrdersData.map((order: any) => [order._id || order.id, order.payment_method])
+      );
+      
       // Filter and format orders
       const shopOrders = ordersData
         .filter((order: any) => 
@@ -80,7 +92,8 @@ const ShopOrderHistory = () => {
             quantity_60gm: Number(order.quantity_60gm) || 0,
             quantity_500gm: Number(order.quantity_500gm) || 0,
             quantity_1kg: Number(order.quantity_1kg) || 0,
-            status: order.status || 'pending'
+            status: order.status || 'pending',
+            payment_method: order.status === 'completed' ? completedOrdersMap.get(order._id || order.id) : undefined
           };
           
           // Calculate the total amount based on quantities and prices
@@ -286,8 +299,13 @@ const ShopOrderHistory = () => {
                               {order.quantity_1kg > 0 && (
                                 <div>1kg × {order.quantity_1kg} = ₹{(order.quantity_1kg * PRICES.PER_KG).toFixed(2)}</div>
                               )}
-                              <div className="font-medium text-primary pt-1">
-                                Total: ₹{order.total_amount.toFixed(2)}
+                              <div className="font-medium text-primary pt-1 flex items-center gap-2">
+                                <span>Total: ₹{order.total_amount.toFixed(2)}</span>
+                                {order.status === "completed" && order.payment_method && (
+                                  <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-600 font-medium">
+                                    {order.payment_method}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>

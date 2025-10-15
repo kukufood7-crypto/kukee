@@ -21,6 +21,7 @@ interface Expense {
   photo_url?: string;
   name: string;
   date: string;
+  expenseBy: string;
 }
 
 const Expenses = () => {
@@ -30,6 +31,7 @@ const Expenses = () => {
     amount: "",
     description: "",
     date: new Date().toISOString().split('T')[0],
+    expenseBy: "Harsh", // Default value
   });
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -51,13 +53,14 @@ const Expenses = () => {
       const res = await fetch(apiPath('/api/expenses'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+          body: JSON.stringify({
           expense_type: formData.expenseType,
           amount: parseFloat(formData.amount),
           month: selectedMonth,
           year: selectedYear,
           description: formData.description,
           date: formData.date,
+          expenseBy: formData.expenseBy,
         }),
       });
       if (!res.ok) throw new Error('Failed to add expense');
@@ -68,6 +71,7 @@ const Expenses = () => {
         amount: "",
         description: "",
         date: new Date().toISOString().split('T')[0],
+        expenseBy: "Harsh",
       });
       fetchExpenses();
     } catch (error: any) {
@@ -190,6 +194,22 @@ const Expenses = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="expenseBy">Expense By</Label>
+                <Select
+                  value={formData.expenseBy}
+                  onValueChange={(value) => setFormData({ ...formData, expenseBy: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Harsh">Harsh</SelectItem>
+                    <SelectItem value="Montu">Montu</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <Button type="submit" className="w-full">Add Expense</Button>
             </form>
           </CardContent>
@@ -221,6 +241,7 @@ const Expenses = () => {
                       {(expense.description || expense.date) && (
                         <p className="text-sm text-muted-foreground">
                           {expense.date && <span className="mr-2">{new Date(expense.date).toLocaleDateString()}</span>}
+                          {expense.expenseBy && <span className="font-medium text-primary mr-2">By: {expense.expenseBy}</span>}
                           {expense.description}
                         </p>
                       )}
