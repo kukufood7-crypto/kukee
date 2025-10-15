@@ -1,0 +1,452 @@
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { apiPath } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Store,
+  Package,
+  Clock,
+  TrendingUp,
+  AlertCircle,
+  Plus,
+  FileText,
+  Settings,
+  Bell,
+  Users
+} from "lucide-react";
+
+interface DashboardStats {
+  pendingOrders: number;
+  totalShops: number;
+  totalRevenue: number;
+  lowStockItems: number;
+}
+
+// Function to get current pending orders count
+const getPendingOrdersCount = async () => {
+  try {
+    const response = await fetch(apiPath('/api/orders?status=pending'));
+    if (!response.ok) {
+      throw new Error('Failed to fetch pending orders');
+    }
+    const orders = await response.json();
+    return orders.length;
+  } catch (error) {
+    console.error('Error fetching pending orders:', error);
+    return 0;
+  }
+};
+
+const quickActions = [
+  { title: "New Order", icon: Plus, color: "bg-green-500", link: "/dashboard/orders" },
+  { title: "View Shops", icon: Store, color: "bg-blue-500", link: "/dashboard/all-shops" },
+  { title: "Stock Check", icon: Package, color: "bg-purple-500", link: "/dashboard/stock" },
+];
+
+const AnimatedParticles = () => {
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none">
+      {[...Array(20)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-2 h-2 bg-primary/10 rounded-full"
+          animate={{
+            x: [
+              Math.random() * window.innerWidth,
+              Math.random() * window.innerWidth,
+            ],
+            y: [
+              Math.random() * window.innerHeight,
+              Math.random() * window.innerHeight,
+            ],
+          }}
+          transition={{
+            duration: Math.random() * 10 + 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          initial={{
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const Home = () => {
+  const [stats, setStats] = useState<DashboardStats>({
+    pendingOrders: 0,
+    totalShops: 0,
+    totalRevenue: 0,
+    lowStockItems: 0,
+  });
+
+  // Function to fetch just the pending orders count
+  const fetchPendingOrders = async () => {
+    try {
+      const response = await fetch(apiPath('/api/orders'));
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      const orders = await response.json();
+      // Filter only pending orders (same logic as PendingOrders page)
+      const pendingOrders = orders.filter((o: any) => o.status === 'pending');
+      return pendingOrders.length;
+    } catch (error) {
+      console.error('Error fetching pending orders:', error);
+      return 0;
+    }
+  };
+
+  // Function to fetch total shops count
+  const fetchTotalShops = async () => {
+    try {
+      const response = await fetch(apiPath('/api/shops'));
+      if (!response.ok) throw new Error('Failed to fetch shops');
+      const shops = await response.json();
+      return shops.length;
+    } catch (error) {
+      console.error('Error fetching total shops:', error);
+      return 0;
+    }
+  };
+
+  // Function to calculate today's revenue from orders
+  const fetchTodayRevenue = async () => {
+    try {
+      const response = await fetch(apiPath('/api/orders'));
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      const orders = await response.json();
+      
+      // Get today's date at midnight for comparison
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Filter orders for today and calculate total revenue
+      const todayRevenue = orders
+        .filter((order: any) => {
+          const orderDate = new Date(order.order_date);
+          orderDate.setHours(0, 0, 0, 0);
+          return orderDate.getTime() === today.getTime() && order.status === 'accepted';
+        })
+        .reduce((total: number, order: any) => total + (order.total_price || 0), 0);
+      
+      return todayRevenue;
+    } catch (error) {
+      console.error('Error fetching today revenue:', error);
+      return 0;
+    }
+  };
+
+  const fetchDashboardStats = async () => {
+    try {
+      // Get the current pending orders count
+      const pendingCount = await fetchPendingOrders();
+      
+      // Get the total shops count
+      const totalShops = await fetchTotalShops();
+
+      // Get today's revenue
+      const todayRevenue = await fetchTodayRevenue();
+      
+      // Update all our accurate counts
+      setStats(prevStats => ({
+        ...prevStats,
+        pendingOrders: pendingCount,
+        totalShops: totalShops,
+        totalRevenue: todayRevenue
+      }));
+      
+      // Then fetch other stats
+      const res = await fetch(apiPath('/api/dashboard/stats'));
+      if (res.ok) {
+        const data = await res.json();
+        // Update other stats but keep our accurate counts
+        setStats(prevStats => ({
+          ...data,
+          pendingOrders: pendingCount,
+          totalShops: totalShops,
+          totalRevenue: todayRevenue
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+    }
+  };
+
+  // Refresh stats every minute to keep pending orders count updated
+    // Update stats every 30 seconds to ensure pending orders are current
+  useEffect(() => {
+    fetchDashboardStats(); // Initial fetch
+    
+    // Set up polling interval for frequent updates
+    const interval = setInterval(() => {
+      fetchDashboardStats();
+    }, 5000); // Check every 5 seconds to keep pending orders count more accurate
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  const statCards = [
+    {
+      title: "Pending Orders",
+      value: stats.pendingOrders,
+      icon: Clock,
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/10",
+    },
+    {
+      title: "Total Shops",
+      value: stats.totalShops,
+      icon: Store,
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/10",
+    },
+    {
+      title: "Today's Revenue",
+      value: `₹${stats.totalRevenue.toLocaleString()}`,
+      icon: TrendingUp,
+      color: "text-green-500",
+      bgColor: "bg-green-500/10",
+    },
+    {
+      title: "Low Stock Items",
+      value: stats.lowStockItems,
+      icon: AlertCircle,
+      color: "text-red-500",
+      bgColor: "bg-red-500/10",
+    },
+  ];
+
+  return (
+    <DashboardLayout>
+      <AnimatedParticles />
+      <div className="relative z-10 space-y-8">
+        {/* Greeting Section */}
+        <div className="text-center p-8 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg backdrop-blur-sm">
+          <motion.h1 
+            className="text-4xl font-bold text-primary mb-2"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Welcome to Kuku Pup Palace
+          </motion.h1>
+          <motion.p 
+            className="text-muted-foreground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            Manage your orders, inventory, and shops all in one place
+          </motion.p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {statCards.map((stat, index) => (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Card className="border-primary/20 hover:border-primary/40 transition-colors">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">{stat.title}</p>
+                      <p className="text-2xl font-bold">{stat.value}</p>
+                    </div>
+                    <div className={`p-3 rounded-full ${stat.bgColor}`}>
+                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-xl text-primary">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {quickActions.map((action, index) => (
+                <motion.div
+                  key={action.title}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Button
+                    variant="outline"
+                    className="w-full h-24 flex flex-col items-center justify-center gap-2 hover:border-primary transition-colors"
+                    onClick={() => window.location.href = action.link}
+                  >
+                    <div className={`p-2 rounded-full ${action.color}`}>
+                      <action.icon className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="font-medium">{action.title}</span>
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Business Insights */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Sales Overview */}
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-xl text-primary">Sales Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center justify-between p-4 rounded-lg bg-secondary/5"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-green-500/10">
+                      <TrendingUp className="w-5 h-5 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Average Daily Orders</p>
+                      <p className="text-2xl font-bold text-green-500">₹{Math.round(stats.totalRevenue / 24)}/hr</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="flex items-center justify-between p-4 rounded-lg bg-secondary/5"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-blue-500/10">
+                      <Package className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Average Order Value</p>
+                      <p className="text-2xl font-bold text-blue-500">₹{stats.totalRevenue > 0 && stats.pendingOrders > 0 ? 
+                        Math.round(stats.totalRevenue / (stats.pendingOrders || 1)) : 0}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stock Status */}
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-xl text-primary">Inventory Alert</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-lg bg-secondary/5"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 rounded-full bg-orange-500/10">
+                      <AlertCircle className="w-5 h-5 text-orange-500" />
+                    </div>
+                    <p className="font-medium">Low Stock Items</p>
+                  </div>
+                  <div className="pl-12">
+                    <p className="text-2xl font-bold text-orange-500">{stats.lowStockItems} items</p>
+                    <p className="text-sm text-muted-foreground">Require immediate attention</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="p-4 rounded-lg bg-secondary/5"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 rounded-full bg-purple-500/10">
+                      <Store className="w-5 h-5 text-purple-500" />
+                    </div>
+                    <p className="font-medium">Active Shops Today</p>
+                  </div>
+                  <div className="pl-12">
+                    <p className="text-2xl font-bold text-purple-500">{Math.round(stats.totalShops * 0.7)}</p>
+                    <p className="text-sm text-muted-foreground">Of {stats.totalShops} total shops</p>
+                  </div>
+                </motion.div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Performance Metrics */}
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-xl text-primary">Today's Performance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-4 rounded-lg bg-secondary/5 text-center"
+              >
+                <div className="p-2 rounded-full bg-green-500/10 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-green-500" />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">Revenue Per Shop</p>
+                <p className="text-2xl font-bold text-green-500">
+                  ₹{stats.totalShops ? Math.round(stats.totalRevenue / stats.totalShops) : 0}
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
+                className="p-4 rounded-lg bg-secondary/5 text-center"
+              >
+                <div className="p-2 rounded-full bg-blue-500/10 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-blue-500" />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">Order Processing Time</p>
+                <p className="text-2xl font-bold text-blue-500">~15 min</p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="p-4 rounded-lg bg-secondary/5 text-center"
+              >
+                <div className="p-2 rounded-full bg-purple-500/10 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-purple-500" />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">Customer Satisfaction</p>
+                <p className="text-2xl font-bold text-purple-500">98%</p>
+              </motion.div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default Home;
