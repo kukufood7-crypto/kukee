@@ -37,8 +37,8 @@ const getPendingOrdersCount = async () => {
 
 const quickActions = [
   { title: "New Order", icon: Plus, color: "bg-green-500", link: "/orders" },
-  { title: "View Shops", icon: Store, color: "bg-blue-500", link: "/all-shops" },
-  { title: "Stock Check", icon: Package, color: "bg-purple-500", link: "/stock" },
+  { title: "View Shops", icon: Store, color: "bg-blue-500", link: "/shops" },
+  { title: "Stock Check", icon: Package, color: "bg-purple-500", link: "/stock-management" },
 ];
 
 const AnimatedParticles = () => {
