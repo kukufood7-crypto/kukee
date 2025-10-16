@@ -41,8 +41,8 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
   doc.text(currentDate, 190, 20, { align: 'right' });
   
   doc.setFontSize(10);
-  doc.text('Harsh : 7567427225', 190, 27, { align: 'right' });
-  doc.text('Montu : 9687448784', 190, 34, { align: 'right' });
+  doc.text('  7567427225', 190, 27, { align: 'right' });
+  doc.text('  9687448784', 190, 34, { align: 'right' });
   
   // Company name and title
   doc.setFontSize(32);
@@ -165,8 +165,8 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
           doc.setFont(undefined, 'normal');
           doc.text(item.name, 25, yPos);
           doc.text(item.qty.toString(), 85, yPos);
-          doc.text(`₹${item.price}`, 125, yPos);
-          doc.text(`₹${(item.qty * item.price).toFixed(2)}`, 165, yPos);
+          doc.text('₹' + Math.floor(item.price).toString(), 125, yPos);
+          doc.text('₹' + Math.floor(item.qty * item.price).toString(), 165, yPos);
           yPos += 12;
         }
       });
@@ -177,9 +177,10 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
       doc.setTextColor(0);  // Black text
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
-      doc.text('Total:', 120, yPos + 14);
-      doc.text('₹_____________', 140, yPos + 14);  // Underline
-      doc.text(`${order.totalPrice.toFixed(2)}`, 165, yPos + 14, { align: 'right' });
+      doc.text('Total : ', 120, yPos + 14);
+      // Draw an underline instead of using text
+      doc.line(140, yPos + 15, 180, yPos + 15);
+      doc.text('₹' + parseInt(order.totalPrice.toString()), 165, yPos + 14, { align: 'right' });
       
       // Footer
       doc.setTextColor(0);
@@ -214,10 +215,10 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
           doc.rect(20, yPos - 5, 170, 10, 'F');
         }
         doc.setFont(undefined, 'normal');
-        doc.text(item.name, 25, yPos);
-        doc.text(item.qty.toString(), 85, yPos);
-        doc.text(`₹${item.price}`, 125, yPos);
-        doc.text(`₹${(item.qty * item.price).toFixed(2)}`, 165, yPos);
+          doc.text(item.name, 25, yPos);
+          doc.text(item.qty.toString(), 85, yPos);
+          doc.text('₹' + parseInt(item.price.toString()), 125, yPos);
+          doc.text('₹' + parseInt((item.qty * item.price).toString()), 165, yPos);
         yPos += 12;
       }
     });
@@ -227,9 +228,10 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
     doc.setTextColor(0);  // Black text
     doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
-    doc.text('Total:', 120, yPos + 14);
-    doc.text('₹_____________', 140, yPos + 14);  // Underline
-    doc.text(`${data.totalPrice.toFixed(2)}`, 165, yPos + 14, { align: 'right' });
+    doc.text('Total : ' , 120, yPos + 14);
+    // Draw an underline instead of using text
+    doc.line(140, yPos + 15, 180, yPos + 15);
+    doc.text('₹' + parseInt(data.totalPrice.toString()), 165, yPos + 14, { align: 'right' });
 
     // Footer for single order
     doc.setTextColor(0);

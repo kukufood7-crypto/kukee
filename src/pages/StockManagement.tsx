@@ -294,30 +294,35 @@ const StockManagement = () => {
                   <div className="mb-4">
                     <p className="text-sm text-muted-foreground">Current Stock</p>
                     <p className="text-2xl font-bold text-primary">
-                      {item.quantity.toFixed(item.category === 'biscuit' ? 2 : 0)} {item.unit}
+                      {item.category === 'biscuit' ? `${item.quantity.toFixed(2)} KGs` : `${Math.floor(item.quantity)} pieces`}
                     </p>
                   </div>
                   {item.category === 'biscuit' ? (
                     <div className="space-y-3">
                       <div className="flex gap-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          placeholder="Add KGs and press Enter"
-                          onKeyDown={async (e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              const input = e.currentTarget;
+                        <div className="flex-1 flex gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            placeholder="Enter KGs to add"
+                            id={`add-${item._id}`}
+                          />
+                          <Button 
+                            variant="default"
+                            onClick={async () => {
+                              const input = document.getElementById(`add-${item._id}`) as HTMLInputElement;
                               const value = parseFloat(input.value || "0");
                               if (value > 0) {
                                 const newQuantity = item.quantity + value;
                                 await handleUpdateStock(item._id, newQuantity);
                                 input.value = "";
                               }
-                            }
-                          }}
-                        />
+                            }}
+                          >
+                            Add
+                          </Button>
+                        </div>
                         <Button variant="outline" onClick={async () => {
                           const newQuantity = item.quantity - 0.1;
                           if (newQuantity >= 0) {
@@ -326,16 +331,19 @@ const StockManagement = () => {
                         }}>-0.1</Button>
                       </div>
                       <div className="flex gap-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          placeholder="Remove KGs and press Enter"
-                          className="border-destructive/50"
-                          onKeyDown={async (e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              const input = e.currentTarget;
+                        <div className="flex-1 flex gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            placeholder="Enter KGs to remove"
+                            className="border-destructive/50"
+                            id={`remove-${item._id}`}
+                          />
+                          <Button 
+                            variant="destructive"
+                            onClick={async () => {
+                              const input = document.getElementById(`remove-${item._id}`) as HTMLInputElement;
                               const value = parseFloat(input.value || "0");
                               if (value > 0 && value <= item.quantity) {
                                 const newQuantity = item.quantity - value;
@@ -345,9 +353,11 @@ const StockManagement = () => {
                                 toast.error("Invalid quantity to remove");
                                 input.value = "";
                               }
-                            }
-                          }}
-                        />
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
                         <Button 
                           variant="destructive" 
                           className="whitespace-nowrap"
@@ -365,15 +375,18 @@ const StockManagement = () => {
                   ) : (
                     <div className="space-y-3">
                       <div className="flex gap-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="1"
-                          placeholder="Add pouches and press Enter"
-                          onKeyDown={async (e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              const input = e.currentTarget;
+                        <div className="flex-1 flex gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="Enter pouches to add"
+                            id={`add-${item._id}`}
+                          />
+                          <Button 
+                            variant="default"
+                            onClick={async () => {
+                              const input = document.getElementById(`add-${item._id}`) as HTMLInputElement;
                               const value = parseFloat(input.value || "0");
                               if (value > 0) {
                                 const newQuantity = item.quantity + value;
@@ -383,9 +396,11 @@ const StockManagement = () => {
                               } else {
                                 input.value = "";
                               }
-                            }
-                          }}
-                        />
+                            }}
+                          >
+                            Add
+                          </Button>
+                        </div>
                         <Button variant="outline" onClick={async () => {
                           const newQuantity = item.quantity - 1;
                           if (newQuantity >= 0) {
@@ -394,16 +409,19 @@ const StockManagement = () => {
                         }}>-1</Button>
                       </div>
                       <div className="flex gap-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="1"
-                          placeholder="Remove pouches and press Enter"
-                          className="border-destructive/50"
-                          onKeyDown={async (e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              const input = e.currentTarget;
+                        <div className="flex-1 flex gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="Enter pouches to remove"
+                            className="border-destructive/50"
+                            id={`remove-${item._id}`}
+                          />
+                          <Button 
+                            variant="destructive"
+                            onClick={async () => {
+                              const input = document.getElementById(`remove-${item._id}`) as HTMLInputElement;
                               const value = parseFloat(input.value || "0");
                               if (value > 0 && value <= item.quantity) {
                                 const newQuantity = item.quantity - value;
@@ -414,9 +432,11 @@ const StockManagement = () => {
                                 toast.error(value > item.quantity ? "Not enough pouches available" : "Please enter a valid quantity");
                                 input.value = "";
                               }
-                            }
-                          }}
-                        />
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
                         <Button 
                           variant="destructive" 
                           className="whitespace-nowrap"

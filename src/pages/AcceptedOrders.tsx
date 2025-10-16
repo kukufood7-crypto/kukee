@@ -27,6 +27,7 @@ interface Order {
   total_price: number;
   status: string;
   order_date: string;
+  accepted_at?: string;
   payment_status?: 'cash' | 'upi' | 'pending';
 }
 
@@ -217,9 +218,14 @@ const AcceptedOrders = () => {
                         <div className="flex justify-between items-start mb-4">
                           <div>
                             <h3 className="font-semibold text-lg">{order.shop_name}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              {order.area} • {order.owner_name}
-                            </p>
+                            <div className="space-y-1">
+                              <p className="text-sm text-muted-foreground">
+                                {order.area} • {order.owner_name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Accepted: {order.accepted_at ? format(new Date(order.accepted_at), "dd/MM/yy HH:mm") : 'Not recorded'}
+                              </p>
+                            </div>
                           </div>
                           <div className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                             {order.status}

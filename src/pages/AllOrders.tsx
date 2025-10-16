@@ -160,55 +160,19 @@ const AllOrders = () => {
         }
       }
 
-      // Check biscuit stock for all packet sizes
-      const biscuitStockRes = await fetch(apiPath('/api/stocks'));
-      const stockData = await biscuitStockRes.json();
-      const biscuitStock = stockData.find((item: any) =>
-        item.type === 'raw_material' && item.category === 'biscuit'
-      );
-
-      if (!biscuitStock) {
-        toast.error('Biscuit stock not found in raw materials');
-        return;
-      }
-
-      // Calculate total required biscuit weight for all packet sizes
-      const packetWeights = {
-        '30gm': 0.03,  // 30g = 0.03kg
-        '60gm': 0.06,  // 60g = 0.06kg
-        '500gm': 0.5,  // 500g = 0.5kg
-        '1kg': 1        // 1kg = 1kg
-      };
-
-      let totalRequiredBiscuitKg = 0;
-      for (const [sizeId, quantity] of Object.entries(orderQuantities)) {
-        if (quantity > 0) {
-          totalRequiredBiscuitKg += packetWeights[sizeId as keyof typeof packetWeights] * quantity;
-        }
-      }
-
-      if (biscuitStock.quantity < totalRequiredBiscuitKg) {
-        toast.error(`Not enough biscuit stock. Need ${totalRequiredBiscuitKg.toFixed(2)}kg but only have ${biscuitStock.quantity.toFixed(2)}kg`);
-        return;
-      }
-
       // If we have enough stock for all sizes, proceed with accepting the order
       const res = await fetch(apiPath(`/api/orders/${order.id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'accepted' }),
+        body: JSON.stringify({ 
+          status: 'accepted',
+          accepted_at: new Date().toISOString()
+        }),
       });
 
       if (!res.ok) throw new Error('Failed to update order');
 
-      // Update biscuit stock
-      await fetch(apiPath(`/api/stocks/${biscuitStock._id}`), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          quantity: biscuitStock.quantity - totalRequiredBiscuitKg
-        }),
-      });
+      // No need to update biscuit stock on order acceptance
 
       // Remove packets from stock for each size that has quantity
       for (const [sizeId, quantity] of Object.entries(orderQuantities)) {

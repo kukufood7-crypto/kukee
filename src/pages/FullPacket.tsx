@@ -89,9 +89,13 @@ const FullPacket = () => {
       );
       
       const pouchCount = pouch?.quantity || 0;
+      const biscuitKgs = biscuit?.quantity || 0;
       
-      // Set maximum possible to exactly match pouch count
-      const maxPossible = pouchCount;
+      // Calculate how many pouches we can make with available biscuits
+      const biscuitPouchCapacity = Math.floor((biscuitKgs * 1000) / 30); // 30g per pouch
+      
+      // Set maximum possible to match available pouches (limited by both pouches and biscuit capacity)
+      const maxPossible = Math.min(pouchCount, biscuitPouchCapacity);
 
       console.log('Calculating max capacity:', {
         pouchCount,
@@ -172,6 +176,28 @@ const FullPacket = () => {
         throw new Error(errorData.message || 'Failed to add packets');
       }
 
+      // Calculate biscuit to be reduced (30g per packet)
+      const biscuitKgsToReduce = (addQuantity * 30) / 1000;
+
+      // Get current biscuit stock
+      const stockResponse = await fetch(apiPath('/api/stocks'));
+      const stockData = await stockResponse.json();
+      const biscuitStock = stockData.find((item: any) => 
+        item.type === 'raw_material' && item.category === 'biscuit'
+      );
+      const biscuitStockId = biscuitStock?._id;
+
+      if (biscuitStockId) {
+        await fetch(apiPath(`/api/stocks/${biscuitStockId}`), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            quantity: (biscuitStock?.quantity || 0) - biscuitKgsToReduce,
+            ignoreOrders: true
+          }),
+        });
+      }
+
       const data = await response.json();
       setAvailableStock(data.balance);
       if (typeof (data as any).maxFinishGod === 'number') {
@@ -218,7 +244,30 @@ const FullPacket = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to remove packets');
+        throw new Error(errorData.message || 'Failed to add packets');
+      }
+
+      // Get current biscuit stock
+      const stockResponse = await fetch(apiPath('/api/stocks'));
+      const stockData = await stockResponse.json();
+      const biscuitStock = stockData.find((item: any) => 
+        item.type === 'raw_material' && item.category === 'biscuit'
+      );
+      const biscuitKgs = biscuitStock?.quantity || 0;
+
+      // Calculate biscuit to be reduced (30g per packet)
+      const biscuitKgsToReduce = ((removeQuantity as number) * 30) / 1000;
+
+      // Update biscuit stock
+      if (biscuitStock?._id) {
+        await fetch(apiPath(`/api/stocks/${biscuitStock._id}`), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            quantity: biscuitKgs - biscuitKgsToReduce,
+            ignoreOrders: true
+          }),
+        });
       }
 
       const data = await response.json();

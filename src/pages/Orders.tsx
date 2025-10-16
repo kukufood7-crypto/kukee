@@ -375,7 +375,14 @@ const Orders = () => {
                             className="h-8 w-8"
                             onClick={() => {
                               const currentQty = quantities[size.id] || 0;
-                              if (currentQty > 0) {
+                              if (!currentQty) {
+                                return;
+                              }
+                              if (currentQty === 1) {
+                                const newQuantities = { ...quantities };
+                                delete newQuantities[size.id];
+                                setQuantities(newQuantities);
+                              } else {
                                 setQuantities({
                                   ...quantities,
                                   [size.id]: currentQty - 1
@@ -388,13 +395,21 @@ const Orders = () => {
                           <Input
                             type="number"
                             min="0"
-                            value={quantities[size.id] || 0}
+                            value={quantities[size.id] === undefined ? '' : quantities[size.id]}
                             onChange={(e) => {
-                              const value = parseInt(e.target.value) || 0;
-                              setQuantities({
-                                ...quantities,
-                                [size.id]: value < 0 ? 0 : value
-                              });
+                              const value = e.target.value === '' ? 
+                                undefined : 
+                                parseInt(e.target.value);
+                              if (value === undefined) {
+                                const newQuantities = { ...quantities };
+                                delete newQuantities[size.id];
+                                setQuantities(newQuantities);
+                              } else {
+                                setQuantities({
+                                  ...quantities,
+                                  [size.id]: value < 0 ? 0 : value
+                                });
+                              }
                             }}
                             className="text-center"
                           />

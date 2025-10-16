@@ -299,12 +299,20 @@ const ShopOrderHistory = () => {
                               {order.quantity_1kg > 0 && (
                                 <div>1kg × {order.quantity_1kg} = ₹{(order.quantity_1kg * PRICES.PER_KG).toFixed(2)}</div>
                               )}
-                              <div className="font-medium text-primary pt-1 flex items-center gap-2">
-                                <span>Total: ₹{order.total_amount.toFixed(2)}</span>
+                              <div className="font-medium text-primary pt-1 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span>Total: ₹{order.total_amount.toFixed(2)}</span>
+                                </div>
                                 {order.status === "completed" && order.payment_method && (
-                                  <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-600 font-medium">
-                                    {order.payment_method}
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`px-3 py-1 text-xs rounded-full ${
+                                      order.payment_method.toLowerCase() === 'cash' 
+                                        ? 'bg-green-100 text-green-700' 
+                                        : 'bg-purple-100 text-purple-700'
+                                    } font-medium uppercase tracking-wider`}>
+                                      {order.payment_method}
+                                    </span>
+                                  </div>
                                 )}
                               </div>
                             </div>
