@@ -3,7 +3,8 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Store, ArrowLeft, Package, Calendar, IndianRupee } from "lucide-react";
+import { Store, ArrowLeft, Package, Calendar, IndianRupee, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { apiPath } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -37,6 +38,8 @@ const ShopOrderHistory = () => {
   const [shop, setShop] = useState<Shop | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
 
   useEffect(() => {
     if (shopId) {
@@ -268,16 +271,37 @@ const ShopOrderHistory = () => {
                         <div className="flex items-start gap-2">
                           <Package className="h-4 w-4 text-primary mt-1" />
                           <div>
-                            <div className="font-medium">Quantities</div>
-                            <div className="text-sm text-muted-foreground">
-                              {(order.quantity_30gm || 0) > 0 && `${order.quantity_30gm} x 30g `}
-                              {(order.quantity_60gm || 0) > 0 && `${order.quantity_60gm} x 60g `}
-                              {(order.quantity_500gm || 0) > 0 && `${order.quantity_500gm} x 500g `}
-                              {(order.quantity_1kg || 0) > 0 && `${order.quantity_1kg} x 1kg `}
+                            <div className="font-medium">Quantity</div>
+                            <div className="grid gap-2 mt-1">
+                              {/* Only show boxes for packets that have quantities */}
+                              {order.quantity_30gm > 0 && (
+                                <div className="bg-muted/50 px-3 py-2 rounded-md text-sm">
+                                  {order.quantity_30gm} × 30g
+                                </div>
+                              )}
+                              {order.quantity_60gm > 0 && (
+                                <div className="bg-muted/50 px-3 py-2 rounded-md text-sm">
+                                  {order.quantity_60gm} × 60g
+                                </div>
+                              )}
+                              {order.quantity_500gm > 0 && (
+                                <div className="bg-muted/50 px-3 py-2 rounded-md text-sm">
+                                  {order.quantity_500gm} × 500g
+                                </div>
+                              )}
+                              {order.quantity_1kg > 0 && (
+                                <div className="bg-muted/50 px-3 py-2 rounded-md text-sm">
+                                  {order.quantity_1kg} × 1kg
+                                </div>
+                              )}
                               {!order.quantity_30gm && !order.quantity_60gm && 
-                               !order.quantity_500gm && !order.quantity_1kg && 'No quantities specified'}
+                               !order.quantity_500gm && !order.quantity_1kg && (
+                                <div className="text-sm text-muted-foreground">
+                                  No quantities specified
+                                </div>
+                              )}
                             </div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-sm text-muted-foreground mt-2">
                               Total: {calculateTotalWeight(order)} KG
                             </div>
                           </div>
@@ -318,10 +342,33 @@ const ShopOrderHistory = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-end">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
+                        <div className="flex items-center gap-4 justify-end">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setIsOrderDetailsOpen(true);
+                            }}
+                            className="gap-2 bg-primary text-white hover:bg-primary/90"
+                          >
+                            <Eye className="h-4 w-4" />
+                            View Order Details
+                          </Button>
+                          <div className="flex flex-col gap-2 items-end">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </span>
+                            {order.status === "completed" && order.payment_method && (
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                order.payment_method.toLowerCase() === 'cash'
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-purple-100 text-purple-700'
+                              }`}>
+                                {order.payment_method} Payment
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -331,6 +378,93 @@ const ShopOrderHistory = () => {
             </div>
           </CardContent>
         </Card>
+        {/* Order Details Dialog */}
+        <Dialog open={isOrderDetailsOpen} onOpenChange={setIsOrderDetailsOpen}>
+          <DialogContent className="sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Order Details</DialogTitle>
+            </DialogHeader>
+            {selectedOrder && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-medium">
+                        Order Date: {formatDate(selectedOrder.order_date)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedOrder.status)}`}>
+                    {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Order Items:</h3>
+                    <div className="space-y-2">
+                      {selectedOrder.quantity_30gm > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>30gm × {selectedOrder.quantity_30gm}</span>
+                          <span>₹{(selectedOrder.quantity_30gm * PRICES.PACK_30GM).toFixed(2)}</span>
+                        </div>
+                      )}
+                      {selectedOrder.quantity_60gm > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>60gm × {selectedOrder.quantity_60gm}</span>
+                          <span>₹{(selectedOrder.quantity_60gm * PRICES.PACK_60GM).toFixed(2)}</span>
+                        </div>
+                      )}
+                      {selectedOrder.quantity_500gm > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>500gm × {selectedOrder.quantity_500gm}</span>
+                          <span>₹{(selectedOrder.quantity_500gm * PRICES.PACK_500GM).toFixed(2)}</span>
+                        </div>
+                      )}
+                      {selectedOrder.quantity_1kg > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>1kg × {selectedOrder.quantity_1kg}</span>
+                          <span>₹{(selectedOrder.quantity_1kg * PRICES.PER_KG).toFixed(2)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">
+                            Total Weight: {calculateTotalWeight(selectedOrder)} KG
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <IndianRupee className="h-4 w-4 text-primary" />
+                          <span className="text-lg font-bold">
+                            Total Amount: ₹{selectedOrder.total_amount?.toFixed(2)}
+                          </span>
+                        </div>
+                        {selectedOrder.status === "completed" && selectedOrder.payment_method && (
+                          <div className="flex items-center gap-2">
+                            <span className={`px-4 py-2 rounded-full text-sm font-medium uppercase ${
+                              selectedOrder.payment_method.toLowerCase() === 'cash'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-purple-100 text-purple-700'
+                            }`}>
+                              {selectedOrder.payment_method} Payment
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

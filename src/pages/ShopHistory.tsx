@@ -4,7 +4,10 @@ import { apiPath } from "@/lib/api";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Phone, User, Truck, History } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Search, MapPin, Phone, User, Truck, History, IndianRupee, Calendar, Package, Eye } from "lucide-react";
+import { format } from "date-fns";
 
 interface Shop {
   id: string;
@@ -17,10 +20,37 @@ interface Shop {
   last_visit_date: string;
 }
 
+interface Order {
+  _id: string;
+  shop_id: string;
+  order_date: string;
+  status: string;
+  quantity_30gm?: number;
+  quantity_60gm?: number;
+  quantity_500gm?: number;
+  quantity_1kg?: number;
+  total_amount?: number;
+  payment_method?: string;
+  payment_status?: string;
+}
+
+// Product prices
+const PRICES = {
+  PER_KG: 180,
+  PACK_30GM: 5,
+  PACK_60GM: 10,
+  PACK_500GM: 90,
+};
+
 const ShopHistory = () => {
   const [shops, setShops] = useState<Shop[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+  const [shopOrders, setShopOrders] = useState<Order[]>([]);
+  const [isOrdersDialogOpen, setIsOrdersDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {

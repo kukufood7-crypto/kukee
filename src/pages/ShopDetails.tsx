@@ -17,6 +17,7 @@ interface Order {
   total_price: number;
   order_date: string;
   status: string;
+  payment_method: 'CASH' | 'UPI';
 }
 
 interface Shop {
@@ -241,6 +242,16 @@ const ShopDetails = () => {
                             <p className="text-sm font-medium text-primary">Amount</p>
                             <p className="text-2xl font-bold text-primary">₹{order.total_price.toLocaleString()}</p>
                           </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium text-primary">Payment Method</p>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              order.payment_method === 'CASH'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-purple-100 text-purple-700'
+                            }`}>
+                              {order.payment_method}
+                            </span>
+                          </div>
                         </div>
                         <div className="space-y-3">
                           <p className="text-sm font-medium text-primary">Order Details</p>
@@ -250,7 +261,9 @@ const ShopDetails = () => {
                               { label: '60gm', value: order.quantity_60gm },
                               { label: '500gm', value: order.quantity_500gm },
                               { label: '1kg', value: order.quantity_1kg }
-                            ].map(item => (
+                            ]
+                            .filter(item => (item.value || 0) > 0) // Only show items with quantity > 0
+                            .map(item => (
                               <div 
                                 key={item.label}
                                 className="bg-background rounded-lg p-3 border border-primary/10 transition-all hover:scale-105"

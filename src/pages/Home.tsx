@@ -231,7 +231,7 @@ const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            Welcome to Kuku Pup Palace
+            Welcome to Kukee management.
           </motion.h1>
           <motion.p 
             className="text-muted-foreground"

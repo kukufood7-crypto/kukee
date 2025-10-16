@@ -29,6 +29,7 @@ interface Order {
   order_date: string;
   accepted_at?: string;
   payment_status?: 'cash' | 'upi' | 'pending';
+  payment_method?: string; // Added for history views
 }
 
 type PaymentMethod = 'cash' | 'upi' | 'pending';
@@ -78,6 +79,7 @@ const AcceptedOrders = () => {
       const updateData = {
         status: method === 'pending' ? 'accepted' : 'completed',
         payment_status: method,
+        payment_method: method === 'pending' ? undefined : method.toUpperCase(), // Add payment_method for history views
         completed_at: method === 'pending' ? null : new Date().toISOString()
       };
 
