@@ -91,8 +91,9 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/c
 
 git update -->
 
-
+git add .
 git commit -m "fht"
 git push -u origin main
+git push origin main
 
 https://kukee.vercel.app
