@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,9 +37,9 @@ const getPendingOrdersCount = async () => {
 };
 
 const quickActions = [
-  { title: "New Order", icon: Plus, color: "bg-green-500", link: "/orders" },
-  { title: "View Shops", icon: Store, color: "bg-blue-500", link: "/shops" },
-  { title: "Stock Check", icon: Package, color: "bg-purple-500", link: "/stock-management" },
+  { title: "New Order", icon: Plus, color: "bg-green-500", link: "/dashboard/orders" },
+  { title: "View Shops", icon: Store, color: "bg-blue-500", link: "/dashboard/all-shops" },
+  { title: "Stock Check", icon: Package, color: "bg-purple-500", link: "/dashboard/stock" },
 ];
 
 const AnimatedParticles = () => {
@@ -74,6 +75,7 @@ const AnimatedParticles = () => {
 };
 
 const Home = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     pendingOrders: 0,
     totalShops: 0,
@@ -286,7 +288,7 @@ const Home = () => {
                   <Button
                     variant="outline"
                     className="w-full h-24 flex flex-col items-center justify-center gap-2 hover:border-primary transition-colors"
-                    onClick={() => window.location.href = action.link}
+                    onClick={() => navigate(action.link)}
                   >
                     <div className={`p-2 rounded-full ${action.color}`}>
                       <action.icon className="w-5 h-5 text-white" />
