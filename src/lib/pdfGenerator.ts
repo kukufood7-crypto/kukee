@@ -23,40 +23,63 @@ interface BillDataWithDate extends BillData {
 
 const addLogoWithWatermark = (doc: jsPDF): Promise<void> => {
   return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      // Create watermark
-      const canvas = document.createElement('canvas');
-      canvas.width = 500;
-      canvas.height = 500;
-      const ctx = canvas.getContext('2d');
-      
-      if (ctx) {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.globalAlpha = 0.08; // Slightly lighter watermark
-        
-        // Draw watermark without rotation
-        ctx.drawImage(img, 100, 100, 300, 300);
-        
-        // Add watermark first (in background) - centered on the page
-        doc.addImage(
-          canvas.toDataURL('image/png'),
-          'PNG',
-          20,
-          80,
-          170,
-          170,
-          undefined,
-          'NONE'
-        );
-      }
-      
-      // Add extra large main logo at top left
-      doc.addImage(img, 'PNG', 8, 8, 53, 50, undefined, 'NONE');
-      resolve();
-    };
-    img.src = '/img/logobg.png';
+    try {
+      const img = new Image();
+      img.crossOrigin = "Anonymous"; // Enable cross-origin image loading
+      img.onload = () => {
+        try {
+          // Create watermark
+          const canvas = document.createElement('canvas');
+          canvas.width = 500;
+          canvas.height = 500;
+          const ctx = canvas.getContext('2d');
+          
+          if (ctx) {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 0.08; // Slightly lighter watermark
+            
+            // Draw watermark without rotation
+            ctx.drawImage(img, 100, 100, 300, 300);
+            
+            try {
+              // Add watermark first (in background) - centered on the page
+              doc.addImage(
+                canvas.toDataURL('image/png'),
+                'PNG',
+                20,
+                80,
+                170,
+                170,
+                undefined,
+                'NONE'
+              );
+            } catch (error) {
+              console.error('Error adding watermark:', error);
+            }
+          }
+          
+          try {
+            // Add extra large main logo at top left
+            doc.addImage(img, 'PNG', 8, 8, 53, 50, undefined, 'NONE');
+          } catch (error) {
+            console.error('Error adding logo:', error);
+          }
+          resolve();
+        } catch (error) {
+          console.error('Error creating canvas:', error);
+          resolve(); // Continue even if watermark fails
+        }
+      };
+      img.onerror = (error) => {
+        console.error('Error loading image:', error);
+        resolve(); // Continue even if image loading fails
+      };
+      img.src = '/img/logobg.png';
+    } catch (error) {
+      console.error('Error in addLogoWithWatermark:', error);
+      resolve(); // Continue even if the entire process fails
+    }
   });
 };
 
@@ -288,6 +311,12 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
   doc.setLineWidth(0.2);
   doc.line(20, 260, 190, 260);
   
-  // Save the PDF
-  doc.save(filename || `KUKEE-Bill-${data.shopName}-${Date.now()}.pdf`);
+  try {
+    // Save the PDF with error handling
+    const pdfFilename = filename || `KUKEE-Bill-${data.shopName}-${Date.now()}.pdf`;
+    doc.save(pdfFilename);
+  } catch (error) {
+    console.error('Error saving PDF:', error);
+    throw new Error('Failed to generate PDF. Please try again.');
+  }
 };
