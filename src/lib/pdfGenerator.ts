@@ -21,7 +21,46 @@ interface BillDataWithDate extends BillData {
   };
 }
 
-export const generateBill = (data: BillDataWithDate, filename?: string) => {
+const addLogoWithWatermark = (doc: jsPDF): Promise<void> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      // Create watermark
+      const canvas = document.createElement('canvas');
+      canvas.width = 500;
+      canvas.height = 500;
+      const ctx = canvas.getContext('2d');
+      
+      if (ctx) {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 0.08; // Slightly lighter watermark
+        
+        // Draw watermark without rotation
+        ctx.drawImage(img, 100, 100, 300, 300);
+        
+        // Add watermark first (in background) - centered on the page
+        doc.addImage(
+          canvas.toDataURL('image/png'),
+          'PNG',
+          20,
+          80,
+          170,
+          170,
+          undefined,
+          'NONE'
+        );
+      }
+      
+      // Add extra large main logo at top left
+      doc.addImage(img, 'PNG', 8, 8, 53, 50, undefined, 'NONE');
+      resolve();
+    };
+    img.src = '/img/logobg.png';
+  });
+};
+
+export const generateBill = async (data: BillDataWithDate, filename?: string) => {
   const doc = new jsPDF();
   
   // Add border to the page
@@ -29,6 +68,9 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
   doc.setLineWidth(0.5);
   doc.rect(10, 10, 190, 277); // Outer border
   doc.rect(12, 12, 186, 273); // Inner border
+  
+  // Add logo and watermark
+  await addLogoWithWatermark(doc);
   
   // Header with date and contact information
   const currentDate = new Date().toLocaleDateString('en-US', { 
@@ -180,7 +222,7 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
       doc.text('Total : ', 120, yPos + 14);
       // Draw an underline instead of using text
       doc.line(140, yPos + 15, 180, yPos + 15);
-      doc.text('₹' + parseInt(order.totalPrice.toString()), 165, yPos + 14, { align: 'right' });
+      doc.text(`₹${Math.floor(order.totalPrice)}`, 165, yPos + 14, { align: 'right' });
       
       // Footer
       doc.setTextColor(0);
@@ -215,25 +257,23 @@ export const generateBill = (data: BillDataWithDate, filename?: string) => {
           doc.rect(20, yPos - 5, 170, 10, 'F');
         }
         doc.setFont(undefined, 'normal');
-          doc.text(item.name, 25, yPos);
-          doc.text(item.qty.toString(), 85, yPos);
-          doc.text('₹' + parseInt(item.price.toString()), 125, yPos);
-          doc.text('₹' + parseInt((item.qty * item.price).toString()), 165, yPos);
+        doc.text(item.name, 25, yPos);
+        doc.text(item.qty.toString(), 85, yPos);
+        doc.text(`₹${Math.floor(item.price)}`, 125, yPos);
+        doc.text(`₹${Math.floor(item.qty * item.price)}`, 165, yPos);
         yPos += 12;
       }
     });
 
     // Total section for single order with underline
-    doc.setFillColor(255, 255, 255);  // White background
-    doc.setTextColor(0);  // Black text
-    doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
-    doc.text('Total : ' , 120, yPos + 14);
-    // Draw an underline instead of using text
-    doc.line(140, yPos + 15, 180, yPos + 15);
-    doc.text('₹' + parseInt(data.totalPrice.toString()), 165, yPos + 14, { align: 'right' });
-
-    // Footer for single order
+      doc.setFillColor(255, 255, 255);  // White background
+      doc.setTextColor(0);  // Black text
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text('Total:', 120, yPos + 14);
+      // Draw an underline instead of using text
+      doc.line(140, yPos + 15, 180, yPos + 15);
+      doc.text('₹' + Math.floor(data.totalPrice), 165, yPos + 14, { align: 'right' });    // Footer for single order
     doc.setTextColor(0);
     doc.setFontSize(11);
     doc.setFont(undefined, 'normal');

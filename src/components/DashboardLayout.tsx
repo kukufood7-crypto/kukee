@@ -54,17 +54,21 @@ const DashboardSidebar = () => {
   return (
     <Sidebar className={collapsed ? "w-16" : "w-[258px]"}>
       <SidebarContent>
-        <div className="p-6 flex items-center gap-3">
-          <DogIcon className="w-10 h-10 text-primary" />
-          {!collapsed && (
-            <span className="font-bold text-2xl text-primary">KUKEE</span>
-          )}
+        <div className="pt-4 px-4 flex items-center gap-3 justify-center">
+          <img 
+            src="/img/logobg.png" 
+            alt="KUKEE Logo"
+            className={cn(
+              "transition-all duration-200",
+              collapsed ? "w-14 h-14" : "w-50 h-50 -ml-4"
+            )}
+          />
         </div>
 
-        <SidebarGroup className="mt-8">
-          <SidebarGroupLabel className="text-2xl font-bold px-4 mb-6">
-            Management
-          </SidebarGroupLabel>
+        <div className="h-2" />
+        <div className="h-2" />
+
+        <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-4">
               {menuItems.map((item) => (

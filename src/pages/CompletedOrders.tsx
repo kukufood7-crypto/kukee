@@ -240,6 +240,10 @@ const CompletedOrders = () => {
                             <p className="text-sm text-muted-foreground">
                               {order.area} • {order.owner_name}
                             </p>
+                            <p className="text-sm text-muted-foreground mt-1 flex items-center">
+                              <CalendarIcon className="h-3 w-3 mr-1 inline" />
+                              Completed on: {format(new Date(order.completed_at || order.order_date), 'PPP')}
+                            </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className={cn(
