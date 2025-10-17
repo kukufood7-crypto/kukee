@@ -56,7 +56,7 @@ const DashboardSidebar = () => {
       <SidebarContent>
         <div className="pt-4 px-4 flex items-center gap-3 justify-center">
           <img 
-            src="/img/logobg.png" 
+            src={`${window.location.origin}/img/logobg.png`}
             alt="KUKEE Logo"
             className={cn(
               "transition-all duration-200",

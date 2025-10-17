@@ -75,7 +75,9 @@ const addLogoWithWatermark = (doc: jsPDF): Promise<void> => {
         console.error('Error loading image:', error);
         resolve(); // Continue even if image loading fails
       };
-      img.src = '/img/logobg.png';
+      // Use the correct path to the logo in public directory
+      const baseUrl = window.location.origin;
+      img.src = `${baseUrl}/img/logobg.png`;
     } catch (error) {
       console.error('Error in addLogoWithWatermark:', error);
       resolve(); // Continue even if the entire process fails
