@@ -139,7 +139,7 @@ const ShopOrderHistory = () => {
   // Product prices
   const PRICES = {
     PER_KG: 180,
-    PACK_30GM: 5,
+    PACK_30GM: 4,
     PACK_60GM: 10,
     PACK_500GM: 90,
   };
@@ -271,37 +271,16 @@ const ShopOrderHistory = () => {
                         <div className="flex items-start gap-2">
                           <Package className="h-4 w-4 text-primary mt-1" />
                           <div>
-                            <div className="font-medium">Quantity</div>
-                            <div className="grid gap-2 mt-1">
-                              {/* Only show boxes for packets that have quantities */}
-                              {order.quantity_30gm > 0 && (
-                                <div className="bg-muted/50 px-3 py-2 rounded-md text-sm">
-                                  {order.quantity_30gm} × 30g
-                                </div>
-                              )}
-                              {order.quantity_60gm > 0 && (
-                                <div className="bg-muted/50 px-3 py-2 rounded-md text-sm">
-                                  {order.quantity_60gm} × 60g
-                                </div>
-                              )}
-                              {order.quantity_500gm > 0 && (
-                                <div className="bg-muted/50 px-3 py-2 rounded-md text-sm">
-                                  {order.quantity_500gm} × 500g
-                                </div>
-                              )}
-                              {order.quantity_1kg > 0 && (
-                                <div className="bg-muted/50 px-3 py-2 rounded-md text-sm">
-                                  {order.quantity_1kg} × 1kg
-                                </div>
-                              )}
+                            <div className="font-medium">Quantities</div>
+                            <div className="text-sm text-muted-foreground">
+                              {(order.quantity_30gm || 0) > 0 && `${order.quantity_30gm} x 30g `}
+                              {(order.quantity_60gm || 0) > 0 && `${order.quantity_60gm} x 60g `}
+                              {(order.quantity_500gm || 0) > 0 && `${order.quantity_500gm} x 500g `}
+                              {(order.quantity_1kg || 0) > 0 && `${order.quantity_1kg} x 1kg `}
                               {!order.quantity_30gm && !order.quantity_60gm && 
-                               !order.quantity_500gm && !order.quantity_1kg && (
-                                <div className="text-sm text-muted-foreground">
-                                  No quantities specified
-                                </div>
-                              )}
+                               !order.quantity_500gm && !order.quantity_1kg && 'No quantities specified'}
                             </div>
-                            <div className="text-sm text-muted-foreground mt-2">
+                            <div className="text-sm text-muted-foreground">
                               Total: {calculateTotalWeight(order)} KG
                             </div>
                           </div>

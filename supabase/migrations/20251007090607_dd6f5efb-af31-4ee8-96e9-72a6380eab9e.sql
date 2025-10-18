@@ -42,7 +42,7 @@ CREATE TABLE public.stock (
 
 -- Insert initial stock data
 INSERT INTO public.stock (packet_size, price, total_stock_kg) VALUES
-  ('30gm', 5.00, 0),
+  ('30gm', 5.00, 0), -- Price updated to 5rs
   ('60gm', 10.00, 0),
   ('500gm', 90.00, 0),
   ('1kg', 180.00, 0);

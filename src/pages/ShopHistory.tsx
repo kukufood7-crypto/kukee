@@ -37,7 +37,7 @@ interface Order {
 // Product prices
 const PRICES = {
   PER_KG: 180,
-  PACK_30GM: 5,
+  PACK_30GM: 4,
   PACK_60GM: 10,
   PACK_500GM: 90,
 };
@@ -166,7 +166,7 @@ const ShopHistory = () => {
                         </div>
                       )}
                     </div>
-                  </CardContent>
+                  </CardContent>  
                 </Card>
               ))
             )}
