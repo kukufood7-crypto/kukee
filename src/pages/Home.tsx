@@ -127,7 +127,7 @@ const Home = () => {
         .filter((order: any) => {
           const orderDate = new Date(order.order_date);
           orderDate.setHours(0, 0, 0, 0);
-          return orderDate.getTime() === today.getTime() && order.status === 'accepted';
+          return orderDate.getTime() === today.getTime() && order.status === 'completed';
         })
         .reduce((total: number, order: any) => total + (order.total_price || 0), 0);
       

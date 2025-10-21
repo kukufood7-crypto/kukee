@@ -103,10 +103,12 @@ const QRCode = () => {
                   </div>
                 ) : (
                   <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center">
-                    <div className="w-[400px] h-[400px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                      <p className="text-gray-500 text-center px-4">
-                        Enter an amount and click Generate<br/>to create a QR code
-                      </p>
+                    <div className="w-[400px] h-[400px] flex items-center justify-center">
+                      <img 
+                        src="/img/Qr.jpg" 
+                        alt="Default QR Code" 
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                   </div>
                 )}

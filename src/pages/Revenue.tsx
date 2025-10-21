@@ -124,7 +124,7 @@ const Revenue = () => {
     }
 
     orders.forEach(order => {
-      if (order.status === 'accepted') {
+      if (order.status === 'accepted' || order.status === 'completed') {
         // Calculate revenue by pack size
         revenueByPackSize['30gm'] += order.quantity_30gm * 5;
         revenueByPackSize['60gm'] += order.quantity_60gm * 10;

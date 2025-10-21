@@ -154,13 +154,34 @@ const FullPacket = () => {
       return;
     }
 
-    if (addQuantity > maxPossibleStock) {
-      toast.error(`Cannot add more than ${maxPossibleStock} packets. Maximum is limited by available pouches.`);
-      return;
-    }
-
     setActionLoading(true);
     try {
+      // Get current biscuit stock first
+      const stockResponse = await fetch(apiPath('/api/stocks'));
+      const stockData = await stockResponse.json();
+      const biscuitStock = stockData.find((item: any) => 
+        item.type === 'raw_material' && item.category === 'biscuit'
+      );
+      
+      // Calculate required biscuit in KG for the requested packets
+      const requiredBiscuitKg = (addQuantity * 30) / 1000; // 30g per packet converted to kg
+      const availableBiscuitKg = biscuitStock?.quantity || 0;
+
+      // Check if enough biscuit is available
+      if (requiredBiscuitKg > availableBiscuitKg) {
+        const possiblePackets = Math.floor((availableBiscuitKg * 1000) / 30);
+        toast.error(`Not enough biscuit stock. You can only make ${possiblePackets} packets with current biscuit stock (${availableBiscuitKg.toFixed(2)} kg)`);
+        setActionLoading(false);
+        return;
+      }
+
+      // Check pouch availability
+      if (addQuantity > maxPossibleStock) {
+        toast.error(`Cannot add more than ${maxPossibleStock} packets. Maximum is limited by available pouches.`);
+        setActionLoading(false);
+        return;
+      }
+
       const response = await fetch(apiPath('/api/finish-god/add'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -176,23 +197,14 @@ const FullPacket = () => {
         throw new Error(errorData.message || 'Failed to add packets');
       }
 
-      // Calculate biscuit to be reduced (30g per packet)
-      const biscuitKgsToReduce = (addQuantity * 30) / 1000;
-
-      // Get current biscuit stock
-      const stockResponse = await fetch(apiPath('/api/stocks'));
-      const stockData = await stockResponse.json();
-      const biscuitStock = stockData.find((item: any) => 
-        item.type === 'raw_material' && item.category === 'biscuit'
-      );
+      // Update biscuit stock with reduced amount after successful packet creation
       const biscuitStockId = biscuitStock?._id;
-
       if (biscuitStockId) {
         await fetch(apiPath(`/api/stocks/${biscuitStockId}`), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            quantity: (biscuitStock?.quantity || 0) - biscuitKgsToReduce,
+            quantity: availableBiscuitKg - requiredBiscuitKg,
             ignoreOrders: true
           }),
         });
