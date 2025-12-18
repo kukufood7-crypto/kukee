@@ -19,13 +19,19 @@
     {
       "src": "/uploads/(.*)",
       "dest": "server/src/index.ts"
-    },
+    }
+  ],
+  "rewrites": [
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!api|uploads).*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "accept",
+          "value": "text/html.*"
+        }
+      ],
+      "destination": "/index.html"
     }
   ]
 }
