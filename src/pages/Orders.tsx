@@ -45,10 +45,10 @@ const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const packetSizes: PacketSize[] = [
-    { id: '30gm', name: '30gm', price: 4, weight: 0.03 },
+    { id: '35gm', name: '35gm', price: 4.20, weight: 0.03 },
     { id: '60gm', name: '60gm', price: 10, weight: 0.06 },
     { id: '500gm', name: '500gm', price: 90, weight: 0.5 },
-    { id: '1kg', name: '1kg', price: 180, weight: 1 },
+    { id: '1kg', name: '1kg', price: 120, weight: 1 },
   ];
 
   const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
