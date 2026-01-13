@@ -163,10 +163,10 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
   // Table rows with alternating background
   let yPos = 120;
   const items = [
-    { name: '30gm Packet', qty: data.quantity30gm, price: 4 },
+    { name: '35gm Packet', qty: data.quantity30gm, price: 4.20 },
     { name: '60gm Packet', qty: data.quantity60gm, price: 10 },
     { name: '500gm Packet', qty: data.quantity500gm, price: 90 },
-    { name: '1kg Packet', qty: data.quantity1kg, price: 180 },
+    { name: '1kg Packet', qty: data.quantity1kg, price: 120 },
   ];
   
   if (data.isMultipleOrders && data.ordersData) {
@@ -229,10 +229,10 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
       // Table rows
       yPos = 120;
       const items = [
-        { name: '30gm Packet', qty: order.quantity30gm, price: 4 },
+        { name: '35gm Packet', qty: order.quantity30gm, price: 4.20 },
         { name: '60gm Packet', qty: order.quantity60gm, price: 10 },
         { name: '500gm Packet', qty: order.quantity500gm, price: 90 },
-        { name: '1kg Packet', qty: order.quantity1kg, price: 180 },
+        { name: '1kg Packet', qty: order.quantity1kg, price: 120 },
       ];
       
       items.forEach((item, idx) => {

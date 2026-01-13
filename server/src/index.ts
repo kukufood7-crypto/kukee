@@ -272,7 +272,7 @@ async function start() {
 
   app.get('/api/finish-god/transactions', async (req: any, res: any) => {
     try {
-      console.log('Fetching all finish god transactions...');
+      console.log('Fetching finish god transactions...', req.query);
       
       // Ensure database connection
       if (!db) {
@@ -283,12 +283,31 @@ async function start() {
       const collection = db.collection('finishGodTransactions');
       console.log('Accessing finishGodTransactions collection...');
 
+      let query = {};
+      
+      // Filter by date if provided
+      if (req.query.date) {
+        const queryDate = new Date(req.query.date);
+        const startOfDay = new Date(queryDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(queryDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        query = {
+          date: {
+            $gte: startOfDay,
+            $lte: endOfDay
+          }
+        };
+        console.log('Filtering transactions by date:', req.query.date, 'Range:', startOfDay, 'to', endOfDay);
+      }
+
       const transactions = await collection
-        .find()
+        .find(query)
         .sort({ createdAt: -1 })
         .toArray();
       
-      console.log(`Found ${transactions.length} transactions`);
+      console.log(`Found ${transactions.length} transactions for date ${req.query.date || 'all dates'}`);
       
       res.json(transactions);
     } catch (error) {

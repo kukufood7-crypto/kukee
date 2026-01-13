@@ -45,7 +45,7 @@ const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const packetSizes: PacketSize[] = [
-    { id: '35gm', name: '35gm', price: 4.20, weight: 0.03 },
+    { id: '30gm', name: '35gm', price: 4.20, weight: 0.035 },
     { id: '60gm', name: '60gm', price: 10, weight: 0.06 },
     { id: '500gm', name: '500gm', price: 90, weight: 0.5 },
     { id: '1kg', name: '1kg', price: 120, weight: 1 },
@@ -210,7 +210,7 @@ const Orders = () => {
 
       // Update stock
       const stockUpdate = [
-        { size: '30gm', qty: order.quantity_30gm, weight: 0.03 },
+        { size: '30gm', qty: order.quantity_30gm, weight: 0.035 },
         { size: '60gm', qty: order.quantity_60gm, weight: 0.06 },
         { size: '500gm', qty: order.quantity_500gm, weight: 0.5 },
         { size: '1kg', qty: order.quantity_1kg, weight: 1 },

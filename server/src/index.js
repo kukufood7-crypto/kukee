@@ -223,8 +223,27 @@ async function start() {
 
   app.get('/api/finish-god/transactions', async (req, res) => {
     try {
+      let query = {};
+      
+      // Filter by date if provided
+      if (req.query.date) {
+        const queryDate = new Date(req.query.date);
+        const startOfDay = new Date(queryDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(queryDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        query = {
+          date: {
+            $gte: startOfDay,
+            $lte: endOfDay
+          }
+        };
+        console.log('Filtering transactions by date:', req.query.date);
+      }
+      
       const transactions = await db.collection('finish_god_transactions')
-        .find()
+        .find(query)
         .sort({ date: -1 })
         .toArray();
       res.json(transactions);

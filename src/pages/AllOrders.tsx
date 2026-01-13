@@ -375,7 +375,7 @@ const AllOrders = () => {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                           {order.quantity_30gm > 0 && (
                             <div className="bg-muted/50 p-2 rounded">
-                              <p className="text-sm font-medium">30gm</p>
+                              <p className="text-sm font-medium">35gm</p>
                               <p className="text-lg">{order.quantity_30gm}</p>
                             </div>
                           )}
