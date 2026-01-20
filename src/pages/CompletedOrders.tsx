@@ -82,6 +82,7 @@ const CompletedOrders = () => {
     const ordersData = orders.map(order => ({
       shopName: order.shop_name,
       ownerName: order.owner_name,
+      area: order.area,
       quantity30gm: order.quantity_30gm,
       quantity60gm: order.quantity_60gm,
       quantity500gm: order.quantity_500gm,
@@ -301,6 +302,7 @@ const CompletedOrders = () => {
                               generateBill({
                                 shopName: order.shop_name,
                                 ownerName: order.owner_name,
+                                area: order.area,
                                 quantity30gm: order.quantity_30gm,
                                 quantity60gm: order.quantity_60gm,
                                 quantity500gm: order.quantity_500gm,

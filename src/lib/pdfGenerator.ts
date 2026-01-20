@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 interface BillData {
   shopName: string;
   ownerName: string;
+  area: string;
   quantity30gm: number;
   quantity60gm: number;
   quantity500gm: number;
@@ -120,7 +121,7 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
   doc.setFontSize(10);
   doc.setFont(undefined, 'normal');
   doc.text('Contact:', 25, 98);
-  doc.text('7567427225 | 9687448784', 70, 98);
+  doc.text('90238 77511 | 96874 48784', 70, 98);
   
   // Invoice details
   doc.setFontSize(12);
@@ -132,7 +133,7 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
   // Bill To section with clean design
   doc.setDrawColor(200);
   doc.setLineWidth(0.1);
-  doc.rect(25, 120, 160, 40);
+  doc.rect(25, 120, 160, 50);
   
   doc.setFontSize(11);
   doc.setFont(undefined, 'bold');
@@ -147,21 +148,35 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
     doc.text(data.shopName, 90, 140);
     doc.text('Owner Name:', 30, 150);
     doc.text(data.ownerName, 90, 150);
+    doc.text('Address:', 30, 160);
+    doc.text(data.area, 90, 160);
   }
   
-  // Professional table header
-  doc.setDrawColor(0);
-  doc.setFillColor(240, 240, 240);
-  doc.rect(25, 170, 160, 10, 'F');
+  // Professional table header with improved design
+  const tableStartX = 20;
+  const tableWidth = 170;
+  const col1Width = 70; // Item Description
+  const col2Width = 25; // Quantity
+  const col3Width = 35; // Unit Price
+  const col4Width = 40; // Amount
+  
+  doc.setDrawColor(254, 183, 19); // Yellow color
+  doc.setLineWidth(1);
+  doc.setFillColor(254, 183, 19);
+  doc.rect(tableStartX, 180, tableWidth, 12, 'F');
+  
   doc.setFont(undefined, 'bold');
   doc.setFontSize(10);
-  doc.text('Item Description', 30, 177);
-  doc.text('Quantity', 90, 177);
-  doc.text('Unit Price', 125, 177);
-  doc.text('Amount', 170, 177, { align: 'right' });
+  doc.setTextColor(0);
+  
+  // Header text with proper spacing
+  doc.text('Item Description', tableStartX + 3, 187);
+  doc.text('Qty', tableStartX + col1Width + 5, 187);
+  doc.text('Unit Price', tableStartX + col1Width + col2Width + 3, 187);
+  doc.text('Amount', tableStartX + col1Width + col2Width + col3Width + 5, 187);
   
   // Table rows with alternating background
-  let yPos = 120;
+  let yPos = 195;
   const items = [
     { name: '35gm Packet', qty: data.quantity30gm, price: 4.20 },
     { name: '60gm Packet', qty: data.quantity60gm, price: 10 },
@@ -209,12 +224,13 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
       
       // Shop details box
       doc.setFillColor(245, 245, 245);
-      doc.rect(20, 65, 170, 25, 'F');
+      doc.rect(20, 65, 170, 30, 'F');
       doc.setFontSize(12);
       doc.text('Bill To:', 25, 75);
       doc.setFont(undefined, 'normal');
       doc.text(`Shop Name: ${order.shopName}`, 25, 82);
       doc.text(`Owner Name: ${order.ownerName}`, 25, 89);
+      doc.text(`Address: ${order.area}`, 25, 96);
       
       // Table header
       doc.setFillColor(254, 183, 19);
@@ -244,8 +260,8 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
           doc.setFont(undefined, 'normal');
           doc.text(item.name, 25, yPos);
           doc.text(item.qty.toString(), 85, yPos);
-          doc.text(Math.floor(item.price).toString(), 125, yPos);
-          doc.text(Math.floor(item.qty * item.price).toString(), 165, yPos);
+          doc.text(item.price.toFixed(2), 125, yPos);
+          doc.text((item.qty * item.price).toFixed(2), 165, yPos);
           yPos += 12;
         }
       });
@@ -259,7 +275,7 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
       doc.text('Total : ', 120, yPos + 14);
       // Draw an underline instead of using text
       doc.line(140, yPos + 15, 180, yPos + 15);
-      doc.text(`${Math.floor(order.totalPrice)} /-`, 165, yPos + 14, { align: 'right' });
+      doc.text(`${order.totalPrice.toFixed(2)} /-`, 165, yPos + 14, { align: 'right' });
       
       // Footer
       doc.setTextColor(0);
@@ -287,35 +303,67 @@ export const generateBill = async (data: BillDataWithDate, filename?: string) =>
       totalQuantities['1kg'] += order.quantity1kg;
     });
   } else {
-    let yPos = 185;
+    const tableStartX = 20;
+    const tableWidth = 170;
+    const col1Width = 70; // Item Description
+    const col2Width = 25; // Quantity
+    const col3Width = 35; // Unit Price
+    const col4Width = 40; // Amount
+    
+    let yPos = 195;
+    doc.setLineWidth(0.8);
+    doc.setDrawColor(200, 200, 200);
+    
     items.forEach((item, index) => {
       if (item.qty > 0) {
-        // Subtle alternating rows
-        if (index % 2 === 1) {
-          doc.setFillColor(248, 248, 248);
-          doc.rect(25, yPos - 5, 160, 8, 'F');
+        const rowHeight = 12;
+        
+        // Alternating row background
+        if (index % 2 === 0) {
+          doc.setFillColor(245, 245, 245);
+          doc.rect(tableStartX, yPos - 5, tableWidth, rowHeight, 'F');
         }
         
+        // Draw row borders
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.5);
+        doc.line(tableStartX, yPos - 5, tableStartX + tableWidth, yPos - 5); // Top
+        doc.line(tableStartX, yPos + 7, tableStartX + tableWidth, yPos + 7); // Bottom
+        doc.line(tableStartX, yPos - 5, tableStartX, yPos + 7); // Left
+        doc.line(tableStartX + tableWidth, yPos - 5, tableStartX + tableWidth, yPos + 7); // Right
+        
+        // Column dividers
+        doc.line(tableStartX + col1Width, yPos - 5, tableStartX + col1Width, yPos + 7);
+        doc.line(tableStartX + col1Width + col2Width, yPos - 5, tableStartX + col1Width + col2Width, yPos + 7);
+        doc.line(tableStartX + col1Width + col2Width + col3Width, yPos - 5, tableStartX + col1Width + col2Width + col3Width, yPos + 7);
+        
+        // Cell text
         doc.setFont(undefined, 'normal');
         doc.setFontSize(10);
-        doc.text(item.name, 30, yPos);
-        doc.text(item.qty.toString(), 90, yPos);
-        doc.text(Math.floor(item.price).toString(), 125, yPos);
-        doc.text(Math.floor(item.qty * item.price).toString(), 170, yPos, { align: 'right' });
-        yPos += 10;
+        doc.setTextColor(0);
+        
+        doc.text(item.name, tableStartX + 3, yPos + 2);
+        doc.text(item.qty.toString(), tableStartX + col1Width + 10, yPos + 2);
+        doc.text(item.price.toFixed(2), tableStartX + col1Width + col2Width + 8, yPos + 2);
+        doc.text((item.qty * item.price).toFixed(2), tableStartX + col1Width + col2Width + col3Width + 10, yPos + 2);
+        
+        yPos += 12;
       }
     });
 
-    // Professional total section with double line
-    doc.setDrawColor(0);
-    doc.setLineWidth(0.1);
-    doc.line(25, yPos + 5, 185, yPos + 5);
-    doc.line(25, yPos + 7, 185, yPos + 7);
+    // Professional total section with borders
+    doc.setDrawColor(254, 183, 19);
+    doc.setLineWidth(1);
+    doc.setFillColor(254, 183, 19);
+    
+    // Total box
+    doc.rect(tableStartX, yPos + 5, tableWidth, 12, 'F');
     
     doc.setFont(undefined, 'bold');
     doc.setFontSize(11);
-    doc.text('Total Amount:', 125, yPos + 15);
-    doc.text(`${Math.floor(data.totalPrice)} /-`, 170, yPos + 15, { align: 'right' });
+    doc.setTextColor(0);
+    doc.text('Total:', tableStartX + col1Width + col2Width + 10, yPos + 12);
+    doc.text(data.totalPrice.toFixed(2), tableStartX + col1Width + col2Width + col3Width + 10, yPos + 12);
 
     // Professional footer with terms
     doc.setFont(undefined, 'normal');
