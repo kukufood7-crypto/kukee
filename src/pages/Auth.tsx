@@ -8,8 +8,8 @@ import { toast } from "sonner";
 import { DogIcon, CheckCircle2 } from "lucide-react";
 
 const ADMIN_CREDENTIALS = {
-  email: "kuku@admin",
-  password: "kuku@123"
+  email: "Harsh@admin",
+  password: "Harsh@0726"
 };
 
 const Auth = () => {

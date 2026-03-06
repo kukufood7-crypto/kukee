@@ -14,7 +14,7 @@ const AdminGate = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (id === "kuku@admin" && password === "HM@123") {
+    if (id === "Harsh@admin" && password === "Harsh@0726") {
       localStorage.setItem("adminAccess", "true");
       toast.success("Admin access granted!");
       navigate("/auth");
